@@ -4,7 +4,7 @@ import '../models/crop_model.dart';
 
 class MandiService {
   // Government AGMARKNET API (data.gov.in)
-  static const String _apiKey = 'YOUR_API_KEY';
+  static const String _apiKey =  '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b';
   static const String _baseUrl =
       'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070';
 
@@ -16,28 +16,36 @@ class MandiService {
   }) async {
     try {
       String url =
-          '$_baseUrl?api-key=$_apiKey&format=json&limit=$limit&filters[commodity]=$cropName';
+          '$_baseUrl?api-key=$_apiKey&format=json&limit=$limit&filters%5Bcommodity%5D=$cropName';
 
       if (state != null && state.isNotEmpty) {
-        url += '&filters[state]=$state';
+        url += '&filters%5Bstate%5D=$state';
       }
 
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Accept': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final records = data['records'] as List;
-        return records.map((r) => CropPrice.fromJson(r)).toList();
+        if (data['records'] != null && (data['records'] as List).isNotEmpty) {
+          final records = data['records'] as List;
+          return records.map((r) => CropPrice.fromJson(r)).toList();
+        } else {
+          return getMockData(cropName);
+        }
       } else {
-        return _getMockData(cropName);
+        return getMockData(cropName);
       }
     } catch (e) {
-      return _getMockData(cropName);
+      return getMockData(cropName);
     }
   }
+      
 
   // Mock data for testing without API key
-  static List<CropPrice> _getMockData(String cropName) {
+  static List<CropPrice> getMockData(String cropName) {
     return [
       CropPrice(
         cropName: cropName,
@@ -94,24 +102,33 @@ class MandiService {
 
   // Sell Now or Wait logic
   static String getSellAdvice(List<CropPrice> prices) {
-    if (prices.isEmpty) return 'No data available';
+    if (prices.isEmpty) return 'NEUTRAL';
 
     double avgModal =
         prices.map((p) => p.modalPrice).reduce((a, b) => a + b) /
             prices.length;
-    double maxModal = prices.map((p) => p.modalPrice).reduce(
-        (a, b) => a > b ? a : b);
+    double maxModal =
+        prices.map((p) => p.modalPrice).reduce((a, b) => a > b ? a : b);
+    double minModal =
+        prices.map((p) => p.modalPrice).reduce((a, b) => a < b ? a : b);
 
-    double difference = maxModal - avgModal;
-    double percentDiff = (difference / avgModal) * 100;
+    // Price range analysis
+    double priceRange = maxModal - minModal;
+    double percentDiff = (priceRange / avgModal) * 100;
 
-    if (percentDiff > 15) {
-      return 'WAIT';
-    } else if (percentDiff > 8) {
-      return 'NEUTRAL';
-    } else {
-      return 'SELL';
-    }
+    // High price threshold — sell immediately
+    if (avgModal > 3000) return 'SELL';
+
+    // Good price — sell now
+    if (avgModal > 2500) return 'SELL';
+
+    // Price variation is high — wait for better price
+    if (percentDiff > 20) return 'WAIT';
+
+    // Low price — definitely wait
+    if (avgModal < 1000) return 'WAIT';
+
+    return 'NEUTRAL';
   }
 
   // Get best mandi
