@@ -26,8 +26,10 @@ class PriceResultScreen extends StatelessWidget {
 
     String adviceEmoji = advice == 'SELL' ? '📉' : advice == 'WAIT' ? '📈' : '➡️';
 
+    String bestMandiName = bestMandi != null ? bestMandi.market : 'nearby mandi';
+
     String adviceText = advice == 'SELL'
-        ? 'Prices are stable.\nSell your crop now.'
+        ? 'Best price available at $bestMandiName.\nSell your crop there now.'
         : advice == 'WAIT'
             ? 'Prices are rising!\nWait 5-7 more days.'
             : 'Prices are neutral.\nMonitor for 2-3 days.';
@@ -263,3 +265,5 @@ class PriceResultScreen extends StatelessWidget {
     );
   }
 }
+
+
