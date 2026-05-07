@@ -14,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _cropController = TextEditingController();
   final _stateController = TextEditingController();
   bool _isLoading = false;
+  bool _isHindi = false;
 
   final List<String> _popularCrops = [
     'Mango', 'Rice', 'Wheat', 'Tomato',
@@ -23,8 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _search() async {
     if (_cropController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a crop name'),
+        SnackBar(
+          content: Text(_isHindi ? 'कृपया फसल का नाम दर्ज करें' : 'Please enter a crop name'),
           backgroundColor: Colors.red,
         ),
       );
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final screen = PriceResultScreen(
         cropName: _cropController.text.trim(),
         prices: prices,
+        isHindi: _isHindi,
       );
       await Navigator.push(
         context,
@@ -84,73 +86,123 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: const Text('🌾', style: TextStyle(fontSize: 28)),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('AgroPredict',
+                      const Text('AgroPredict',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
                           )),
-                      Text('AI Crop Price Intelligence',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF52B788),
-                          )),
+                      Text(
+                        _isHindi ? 'AI फसल मूल्य सहायक' : 'AI Crop Price Intelligence',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF52B788),
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text('● LIVE MANDI PRICES',
-                    style: TextStyle(
-                      color: Color(0xFF52B788),
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    )),
+
+              // Status + Language Toggle Row
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _isHindi ? '● लाइव मंडी भाव' : '● LIVE MANDI PRICES',
+                      style: const TextStyle(
+                        color: Color(0xFF52B788),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  // Language Toggle
+                  GestureDetector(
+                    onTap: () => setState(() => _isHindi = false),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: !_isHindi ? const Color(0xFF52B788) : Colors.white10,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text('EN',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: !_isHindi ? Colors.black : Colors.white)),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () => setState(() => _isHindi = true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _isHindi ? const Color(0xFF52B788) : Colors.white10,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text('हिंदी',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: _isHindi ? Colors.black : Colors.white)),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
+
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Color(0xFF1B4332).withOpacity(0.4),
+                  color: const Color(0xFF1B4332).withOpacity(0.4),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Color(0xFF52B788).withOpacity(0.3)),
+                  border: Border.all(color: const Color(0xFF52B788).withOpacity(0.3)),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Text('💡', style: TextStyle(fontSize: 20)),
-                    SizedBox(width: 10),
+                    const Text('💡', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Enter any crop to see live mandi prices and get AI-powered sell advice.',
-                        style: TextStyle(color: Color(0xFF95D5B2), fontSize: 13, height: 1.4),
+                        _isHindi
+                            ? 'फसल का नाम डालें और जानें कहाँ बेचें, कितने में बेचें।'
+                            : 'Enter any crop to see live mandi prices and get AI-powered sell advice.',
+                        style: const TextStyle(
+                            color: Color(0xFF95D5B2), fontSize: 13, height: 1.4),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('CROP NAME',
-                  style: TextStyle(
-                    color: Color(0xFF52B788),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  )),
+
+              Text(
+                _isHindi ? 'फसल का नाम' : 'CROP NAME',
+                style: const TextStyle(
+                  color: Color(0xFF52B788),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _cropController,
                 style: const TextStyle(color: Colors.white, fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: 'e.g. Mango, Rice, Wheat',
+                  hintText: _isHindi ? 'जैसे: आम, चावल, गेहूं' : 'e.g. Mango, Rice, Wheat',
                   hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
                   filled: true,
                   fillColor: const Color(0xFF1A2744),
@@ -166,19 +218,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('STATE (OPTIONAL)',
-                  style: TextStyle(
-                    color: Color(0xFF52B788),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  )),
+
+              Text(
+                _isHindi ? 'राज्य (वैकल्पिक)' : 'STATE (OPTIONAL)',
+                style: const TextStyle(
+                  color: Color(0xFF52B788),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _stateController,
                 style: const TextStyle(color: Colors.white, fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: 'e.g. Odisha, Maharashtra',
+                  hintText: _isHindi ? 'जैसे: ओडिशा, महाराष्ट्र' : 'e.g. Odisha, Maharashtra',
                   hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
                   filled: true,
                   fillColor: const Color(0xFF1A2744),
@@ -194,6 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+
               GestureDetector(
                 onTap: _isLoading ? null : _search,
                 child: Container(
@@ -206,8 +262,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Center(
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.black)
-                        : const Text('CHECK MANDI PRICES',
-                            style: TextStyle(
+                        : Text(
+                            _isHindi ? 'मंडी भाव देखें' : 'CHECK MANDI PRICES',
+                            style: const TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.w900,
                               fontSize: 15,
@@ -217,13 +274,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-              const Text('POPULAR CROPS',
-                  style: TextStyle(
-                    color: Color(0xFF52B788),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  )),
+
+              Text(
+                _isHindi ? 'लोकप्रिय फसलें' : 'POPULAR CROPS',
+                style: const TextStyle(
+                  color: Color(0xFF52B788),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -236,19 +296,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF1A2744),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Color(0xFF52B788).withOpacity(0.3)),
+                        border: Border.all(
+                            color: const Color(0xFF52B788).withOpacity(0.3)),
                       ),
                       child: Text(crop,
-                          style: const TextStyle(color: Color(0xFF95D5B2), fontSize: 13)),
+                          style: const TextStyle(
+                              color: Color(0xFF95D5B2), fontSize: 13)),
                     ),
                   );
                 }).toList(),
               ),
               const SizedBox(height: 30),
+
               Center(
                 child: Text(
-                  'Data source: AGMARKNET • Ministry of Agriculture',
-                  style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11),
+                  _isHindi
+                      ? 'डेटा स्रोत: AGMARKNET • कृषि मंत्रालय, भारत'
+                      : 'Data source: AGMARKNET • Ministry of Agriculture',
+                  style: TextStyle(
+                      color: Colors.white.withOpacity(0.3), fontSize: 11),
                 ),
               ),
             ],
